@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <form action="charge.php" method="POST">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="text" name="amount" placeholder="Amount" required>
+        <div id="card-element">
+            <!-- Stripe elements placeholder -->
+        </div>
+    </form>
+    <a href="payment.html">
+        <button class="btn btn-custom">
+            Pay Now
+        </button>
+    </a>
+    
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        var stripe = Stripe('your_stripe_public_key');
+        var elements = stripe.elements();
+        var cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+    
+        var form = document.querySelector('form');
+        form.addEventListener('proceed', function(event) {
+            event.preventDefault();
+            stripe.createToken(cardElement).then(function(result) {
+                if (result.error) {
+                    // Handle stripe errors
+                } else {
+                    //send token to server to charge user
+                    var token = result.token.id;
+                    var amount = document.querySelector('input[name="amount"]').value;
+                    fetch('charge.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token: token,
+                            amount: amount
+                        })
+                    }).then(function(response) {
+                        if (response.ok) {
+                            // Handle successful payment
+                        } else {
+                            // Handle payment error
+                        }
+                    });
+                }
+            })
+        });
+    </script>
+</body>
+</html>
